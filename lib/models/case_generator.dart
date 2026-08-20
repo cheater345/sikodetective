@@ -155,32 +155,34 @@ class CaseGenerator {
     ));
 
     // Q3 PSYCH — cognitive trick: over-detail
+    final psychOpts = [
+      'Sobra-sobrang detalye na parang inensayo',
+      'Mahina ang boses at kinakabahan',
+      'Matagal bago sumagot',
+      'Madalas tumingin sa kaliwang sulok',
+    ]..shuffle(_rng);
     questions.add(CaseQuestion(
       kind: QuestionKind.psych,
       prompt: 'Ano ang PINAKA-MALAKAS na senyales ng pagsisinungaling sa isang alibi?',
-      options: [
-        'Sobra-sobrang detalye na parang inensayo',
-        'Mahina ang boses at kinakabahan',
-        'Matagal bago sumagot',
-        'Madalas tumingin sa kaliwang sulok',
-      ],
-      correctIndex: 0,
+      options: psychOpts,
+      correctIndex: psychOpts.indexOf('Sobra-sobrang detalye na parang inensayo'),
       explanation:
           'Ayon sa cognitive psychology, ang sobrang detalye ang mas malakas na tanda — kasi ang totoong alaala ay may mga butas, habang ang inimbentong kwento ay inaayos "masyadong perpekto".',
     ));
 
     // Q4 MIND TRAP — ang "PAANO mo nasabi na si X ang pumatay" — reversal
     final innocent = suspects.firstWhere((s) => s.name != killer.name);
+    final q4Opts = [
+      'Si ${innocent.name} — kasi ang kaba ay hindi patunay ng pagkakasala',
+      'Si ${killer.name} — kasi ang kilos ay patunay na agad',
+      'Lahat ng suspek — kasi wala nang pag-asa',
+      'Hindi malalaman — kasi ang kilos ay sapat na',
+    ]..shuffle(_rng);
     questions.add(CaseQuestion(
       kind: QuestionKind.mind,
       prompt: 'Kung ang tanong ay BINALIGTAD — "Sino ang HINDI mo dapat i-areglo batay sa kilos LANG?" — ang sagot ay...?',
-      options: [
-        'Si ${innocent.name} — kasi ang kaba ay hindi patunay ng pagkakasala',
-        'Si ${killer.name} — kasi ang kilos ay patunay na agad',
-        'Lahat ng suspek — kasi wala nang pag-asa',
-        'Hindi malalaman — kasi ang kilos ay sapat na',
-      ],
-      correctIndex: 0,
+      options: q4Opts,
+      correctIndex: q4Opts.indexOf('Si ${innocent.name} — kasi ang kaba ay hindi patunay ng pagkakasala'),
       explanation:
           'Mind trap ito! Madalas mong ituro ang kabado. Pero sabi ng psychology: ang nervousness sa imbestigasyon ay NORMAL at hindi ebidensya. Ang ebidensya (butas sa alibi + over-detail) ang mahalaga — hindi ang kaba.',
     ));
@@ -222,6 +224,14 @@ class CaseGenerator {
         tagline: 'May nakita kang pera na nahulog ng isang matanda sa jeep.',
         characters: 'Ikaw, isang matandang babae na may dalang grocery',
         setup: 'Nahulog ang 500-piso ng matandang babae sa sahig ng jeep nang hindi niya napansin. Tumingin ka sa paligid — walang ibang nakakita.',
+        q1Prompt: 'Ayon sa kwento, ano ang nahulog ng matandang babae?',
+        q1Options: [
+          '500-piso na hindi niya napansing nahulog',
+          '100-piso na kusang inilapag niya',
+          'isang cellphone na luma',
+          'isang susi ng bahay',
+        ],
+        q1Correct: 0,
         options: [
           'Kunin ang pera at ibigay sa kanya',
           'Kunin ang pera at itago',
@@ -230,6 +240,7 @@ class CaseGenerator {
         ],
         correctIdx: 0,
         worstIdx: 1,
+        psychTerm: 'Integrity',
         why: 'Ito ang pinaka-mabilis at makatao. Ibinabalik ang pera nang walang dagdag na gulo — walang kailangang maghabol, at malinaw ang intensyon.',
         worstWhy: 'Ang pagtago ng 500-piso ay pagnanakaw, kahit gaano pa kabilis ang pangyayari. Ang ganitong desisyon ay sinisira ang iyong integridad nang hindi mo namamalayan.',
       ),
@@ -237,6 +248,14 @@ class CaseGenerator {
         tagline: 'Nalaman mo na ang bestfriend mo ay niloloko ang kanyang jowa.',
         characters: 'Ikaw, ang bestfriend, at ang jowa',
         setup: 'May ebidensya kang nakita: chats na nagpapakita na dalawang-timpalad ang bestfriend mo. Ang jowa niya ay mabait at nangunguliling kamusta sa iyo kahit magulo ang buhay niya.',
+        q1Prompt: 'Ayon sa kwento, ano ang ebidensyang nakita mo tungkol sa bestfriend mo?',
+        q1Options: [
+          'Chats na nagpapakita na dalawang-timpalad siya',
+          'Isang larawan na kasama ng iba',
+          'Tumawag siyang may lasing na boses',
+          'Isang balita sa kapitbahay',
+        ],
+        q1Correct: 0,
         options: [
           'Sabihin na agad sa jowa ang totoo',
           'Kausapin ang bestfriend at ibigay ang chance na siya mismo ang magsabi',
@@ -245,6 +264,7 @@ class CaseGenerator {
         ],
         correctIdx: 1,
         worstIdx: 3,
+        psychTerm: 'Confrontation',
         why: 'Sa psychology ng "confrontation", ang pinaka-angkop ay bigyan ang kaibigan ng chance na i-correct — na may ultimatum. Pinapangalagaan nito ang hustisya nang hindi tinatapos ang tao bilang ang namamagitan.',
         worstWhy: 'Ang pag-post ng pribadong chats ay paninira ng dignidad — hindi hustisya. Ang pampublikong kahihiyan ay gumagawa ng pangalawang biktima at sinisira ang tiwala ng lahat sa iyo.',
       ),
@@ -252,6 +272,14 @@ class CaseGenerator {
         tagline: 'Nakita mong nandadaya ang kaklase mo sa eksam.',
         characters: 'Ikaw, ang kaklase, at ang guro',
         setup: 'Malapit sa iyo ang kaklase mo na nagtitingin ng papel ng katabi. Hindi siya gumagawa ng ingay, at nakalusot siya ng dalawang beses.',
+        q1Prompt: 'Ayon sa kwento, ilang beses nakalusot ang kaklase mong nandadaya?',
+        q1Options: [
+          'Dalawang beses',
+          'Isang beses',
+          'Tatlong beses',
+          'Hindi siya nakalusot kahit isang beses',
+        ],
+        q1Correct: 0,
         options: [
           'Itaas ang kamay at iulat siya sa harap ng lahat',
           'Pumalakpak nang palihim para mabalik ang atensyon ng guro',
@@ -260,6 +288,7 @@ class CaseGenerator {
         ],
         correctIdx: 2,
         worstIdx: 3,
+        psychTerm: 'Responsibility',
         why: 'Ang psychological insight: ang pag-ulat ay mas mabisa at makatwiran kung PINAGKAKAIWANAN ang pampublikong kahihiyan. Pinapangalagaan nito ang entidad ng kaklase at binibigyan ng pagkakataong magbago.',
         worstWhy: 'Kapag may alam ka at nanahimik ka, kasabwat ka na. Ang "walang gusto kaguluhan" ay isa ring desisyon — ang hindi pagpili ay pagpili rin.',
       ),
@@ -267,6 +296,14 @@ class CaseGenerator {
         tagline: 'May isang tao ang naghihingalo sa kalsada at ikaw lang ang tao.',
         characters: 'Ikaw, isang nasugatan, at ang paligid',
         setup: 'Sa hatinggabi, may nakita kang lalaking nadapa at hindi kumikibo sa kalsada. Wala kang load sa phone at walang tao sa paligid. May sari-sari store na dalawang bloke ang layo.',
+        q1Prompt: 'Ayon sa kwento, bakit hindi ka agad makatawag ng tulong?',
+        q1Options: [
+          'Wala kang load sa phone at walang tao sa paligid',
+          'Walang signal kahit saan',
+          'Nawasak ang phone mo',
+          'Takot kang makilala ng pulis',
+        ],
+        q1Correct: 0,
         options: [
           'Tumakbo sa sari-sari store at humingi ng tulong',
           'Iwanan siya — siguradong darating ang iba',
@@ -275,6 +312,7 @@ class CaseGenerator {
         ],
         correctIdx: 0,
         worstIdx: 1,
+        psychTerm: 'Bystander effect',
         why: 'Ito ang "bystander effect" — mas lalong HINDI tutulong ang tao kapag marami ang nasa paligid kasi iniisip nilang may ibang gagawa. Sa sitwasyong ito, ikaw ang tanging tao — ang responsibilidad ay nasa iyo, at ang mabilis na paghingi ng tulong ang nagliligtas ng buhay.',
         worstWhy: 'Kapag may nasugatan, ang bawat minuto ay mahalaga. Ang "una akong lalayo at hindi titingin" ay hindi kakulangan ng panahon — ito ay desisyon. Iwanan ang tao sa kalagitnaan ng daan ay mapapabayaan ang kanyang buhay.',
       ),
@@ -282,6 +320,14 @@ class CaseGenerator {
         tagline: 'Nalaman mong may iligal na transaksyon ang pinsan mo.',
         characters: 'Ikaw, ang pinsan, at ang negosyo ng pamilya',
         setup: 'Pamilya ang negosyo ng iyong pinsan na ginagamit bilang front ng iligal na lending. Araw-araw kang nakakakita ng mga pamilya na nasisira dahil sa mataas na tubo. Mahal mo ang pinsan mo at tumutulong siya sa pamilya.',
+        q1Prompt: 'Ayon sa kwento, ano ang ginagamit na front ng iligal na transaksyon ng pinsan mo?',
+        q1Options: [
+          'Ang negosyo ng pamilya',
+          'Isang bodega sa probinsya',
+          'Isang sasakyan na paupahan',
+          'Isang bar sa kanto',
+        ],
+        q1Correct: 0,
         options: [
           'Iulat sa awtoridad',
           'Makipag-usap sa kanya at magbigay ng ultimatum',
@@ -290,73 +336,67 @@ class CaseGenerator {
         ],
         correctIdx: 1,
         worstIdx: 3,
+        psychTerm: 'Moral courage',
         why: 'Ang tamang hakbang ay hindi palaging iulat kaagad. Una, bigyan siya ng pagkakataong magbago. Kung hindi siya makikinig at may ebidensya ka na, saka ka mag-ulat — ito ang pag-aagaw sa "grey zone" ng moralidad: pakikisama vs. responsibilidad.',
         worstWhy: 'Ang pag-invest sa ilegal na negosyo ay ginagawa kang ganap na kasabwat — hindi na lamang saksi. Ang perang kikitain ay mula sa biktima ng pag-aapuhap ay "maruming pera" na magpapaibig sa iyo sa sistema.',
       ),
     ];
 
     final d = dilemmas[_rng.nextInt(dilemmas.length)];
-    final place = _element(locations);
-    final time = _element(times);
-    final situationExtra = _rng.nextBool()
-        ? ' Kakaalis pa lang ng driver, at kailangan mong magdesisyon kaagad.'
-        : ' Ang oras ay $time, at walang tumutulong na awtoridad na malapit.';
 
     final story = '${d.tagline}\n\n'
-        'Sitwasyon: ${d.setup} Nangyayari ito sa $place.$situationExtra\n\n'
+        'Sitwasyon: ${d.setup}\n\n'
         '${d.characters}.\n\n'
         'ANO ANG GAGAWIN MO? Pumili ng isang plano ng aksyon.';
 
     final questions = <CaseQuestion>[];
 
-    // Q1 EASY — nagbabasang mabuti
+    // Q1 EASY — nagbabasang mabuti (nakabatay sa mismong dilemma)
+    final q1Opts = List.of(d.q1Options)..shuffle(_rng);
+    final q1Correct = d.q1Options[d.q1Correct];
     questions.add(CaseQuestion(
       kind: QuestionKind.easy,
-      prompt: 'Ayon sa kwento, ano ang dahilan kung bakit hindi ka agad maka-tawag ng tulong (kung applicable)?',
-      options: [
-        'Walang signal at walang tao sa paligid',
-        'Hindi mo alam ang address',
-        'Takot kang mapagalitan ng pulis',
-        'Nakalimutan mo ang phone',
-      ],
-      correctIndex: 0,
+      prompt: d.q1Prompt,
+      options: q1Opts,
+      correctIndex: q1Opts.indexOf(q1Correct),
       explanation:
-          'Madaling tanong ito para i-ground ka sa detalye ng sitwasyon — may mga tao kasi na sumasagot batay sa palagay, hindi sa teksto.',
+          'Madaling tanong ito para i-ground ka sa mismong detalye ng kwento — may mga tao kasi na sumasagot batay sa palagay, hindi sa teksto.',
     ));
 
     // Q2 DEDUCTION — aling opsyon ang hindi makatao
     final humane = d.options[d.correctIdx];
+    final humaneOpts = List.of(d.options)..shuffle(_rng);
     questions.add(CaseQuestion(
       kind: QuestionKind.deduction,
       prompt: 'Alin sa mga opsyon ang KINUKUHA ang mas makatao at mabilis na paraan?',
-      options: d.options,
-      correctIndex: d.correctIdx,
+      options: humaneOpts,
+      correctIndex: humaneOpts.indexOf(humane),
       explanation: d.why,
     ));
 
-    // Q3 PSYCH — principle behind it
-    final psychPairs = [
-      ['Ano ang tawag sa phenomenon na hindi ka tumutulong dahil inaakala mong may iba na tutulong?', 'Bystander effect', 'Cognitive dissonance', 'FOMO', 'Halo effect'],
-      ['Aling konsepto sa psychology ang tumutukoy sa paggawa ng tama kahit mahirap dahil sa sentido commun?', 'Moral courage', 'Gaslighting', 'Anchoring', 'Priming'],
-      ['Anong defense mechanism ang pagbibigay-katwiran ng maling desisyon?', 'Rationalization', 'Projection', 'Sublimation', 'Repression'],
-      ['Ano ang tawag kapag ang tao ay sumusunod sa karamihan kahit mali?', 'Conformity', 'Rebellion', 'Introspection', 'Altruism'],
-    ];
-    final p = psychPairs[_rng.nextInt(psychPairs.length)];
+    // Q3 PSYCH — principle na naka-connect sa dilemma mismo
+    final psychTerm = d.psychTerm;
+    final psychOpts = [
+      psychTerm,
+      'Cognitive dissonance',
+      'Halo effect',
+      'Priming',
+    ]..shuffle(_rng);
     questions.add(CaseQuestion(
       kind: QuestionKind.psych,
-      prompt: p[0],
-      options: [p[1], p[2], p[3], 'Serendipity'],
-      correctIndex: 0,
-      explanation: 'Psychology insight: ${p[1]} ang tamang termino para sa konseptong ito.',
+      prompt: 'Aling konsepto sa psychology ang pinag-uusapan sa desisyong ito?',
+      options: psychOpts,
+      correctIndex: psychOpts.indexOf(psychTerm),
+      explanation:
+          'Psychology insight: ${d.why} Ang prinsipyong ito ("$psychTerm") ang gumagabay sa pagpili ng mas makataong aksyon.',
     ));
-
-    // Q4 MIND TRAP — reversal: alin ang PINAKA-MALI
     final worst = d.options[d.worstIdx];
+    final worstOpts = List.of(d.options)..shuffle(_rng);
     questions.add(CaseQuestion(
       kind: QuestionKind.mind,
       prompt: 'Mind trap: Kung ang tanong ay binaligtad — "ANO ANG PINAKA-MALI NA DESISYON?" — alin ang pipiliin mo?',
-      options: d.options,
-      correctIndex: d.worstIdx,
+      options: worstOpts,
+      correctIndex: worstOpts.indexOf(worst),
       explanation:
           'Baligtarin ang pananaw! Minsan mas madaling alamin ang TAMANG desisyon kung iisipin mo kung alin ang malinaw na mali. Dito, ang pinakamali ay: $worst.\n\n${d.worstWhy}',
     ));
@@ -375,11 +415,62 @@ class CaseGenerator {
 
   // ===================== DECEPTION =====================
   SikoCase _generateDeception() {
-    final place = _element(locations);
+    final scenes = [
+      _DeceptionScene(
+        event: 'pagnanakaw ng pera sa tindahan',
+        places: [
+          'isang sari-sari store sa Pampanga',
+          'isang tindahan ng mga de-asiso sa Cavite',
+          'isang mini-grocery sa Quezon City',
+          'isang palengke sa Batangas',
+        ],
+        whoInformed: 'may-ari ng tindahan',
+        trueDetail: 'ang tindahan ay SARADO at NAKA-LOCK buong araw, nang walang kahit isang nasirang kandado',
+        liarClaim: 'bukas ang pinto ng tindahan nang dumating siya at nakita niyang may pumasok',
+        q1Wrongs: [
+          'bukas pa ang tindahan nang mga oras na iyon',
+          'may CCTV ang tindahan na malinaw ang rekord',
+          'may pumasok sa tindahan at walang nasira',
+        ],
+      ),
+      _DeceptionScene(
+        event: 'pagbasag ng isang malaking bintana sa apartment',
+        places: [
+          'isang apartment sa Quezon City',
+          'isang tenement sa Tondo',
+          'isang boarding house sa Baguio',
+          'isang condo unit sa Makati',
+        ],
+        whoInformed: 'kasero ng apartment',
+        trueDetail: 'ang bintana ay nabasag mula SA LOOB ng unit — kumalat sa loob ang mga piraso ng baso',
+        liarClaim: 'nabasag ang bintana mula sa labas ng isang inihagis na bato',
+        q1Wrongs: [
+          'nabasag ang bintana mula sa labas ng malakas na hangin',
+          'tumalon sa bintana ang isang magnanakaw',
+          'basag na ang bintana bago pa dumating ang nanitira',
+        ],
+      ),
+      _DeceptionScene(
+        event: 'pagnanakaw ng isang sasakyan sa parking lot',
+        places: [
+          'isang mall parking sa Maynila',
+          'isang parking ng ospital sa Parañaque',
+          'isang resident parking sa Mandaluyong',
+          'isang parking ng paliparan sa Pasay',
+        ],
+        whoInformed: 'guwardya ng parking lot',
+        trueDetail: 'Kumpleto ang CCTV ng parking at WALANG sasakyan ang lumabas ng gate nang mga oras na iyon',
+        liarClaim: 'nakita niyang lumabas ng gate ang sasakyan nang mga oras na iyon',
+        q1Wrongs: [
+          'may CCTV ang parking ngunit sira ang lahat ng camera',
+          'maraming sasakyan ang lumabas ng gate nang mga oras na iyon',
+          'walang CCTV sa parking kaya walang rekord',
+        ],
+      ),
+    ];
+    final scene = scenes[_rng.nextInt(scenes.length)];
+    final place = _element(scene.places);
     final time = _element(times);
-    final event = _rng.nextInt(2) == 0
-        ? 'isang maliit na magnanakaw ng pera sa tindahan'
-        : 'isang malaking basag na bintana';
 
     final people = <String>{};
     while (people.length < 4) {
@@ -391,20 +482,16 @@ class CaseGenerator {
     final otherBehaviors = List.of(behaviors.where((b) => b != liarBehavior))
       ..shuffle(_rng);
 
-    // 3 magkakaibang detalye: ang sinungaling ay nagbabanggit ng isang FABRICATED na detalye
-    final trueDetail = 'ang mga ilaw ay nakapatay nang oras na iyon';
-    final liarDetail = 'malinaw niyang nakita ang mukha ng suspek';
-
     final witnesses = <Suspect>[];
     for (int i = 0; i < 4; i++) {
       final isLiar = i == liarIdx;
       witnesses.add(Suspect(
         name: pList[i],
         relation: 'saksi',
-        alibi: isLiar ? liarDetail : trueDetail,
+        alibi: isLiar ? scene.liarClaim : scene.trueDetail,
         behavior: isLiar ? liarBehavior : otherBehaviors[i],
         statement: isLiar
-            ? 'Pahayag: "Nakita ko ang buong mukha ng suspek, at sigurado akong lalaki ito, naka-itim na jacket."'
+            ? 'Pahayag: "${scene.liarClaim[0].toUpperCase()}${scene.liarClaim.substring(1)}."'
             : (_rng.nextBool()
                 ? 'Pahayag: "Hindi ko masyadong nakita — madilim at gulo-gulo na noon."'
                 : 'Pahayag: "Narinig ko ang ingay, pero nakasara ang pinto ng bahay ko."'),
@@ -413,8 +500,8 @@ class CaseGenerator {
     final liar = witnesses[liarIdx];
 
     final story = StringBuffer()
-      ..writeln('Nangyari ang $event sa $place bandang $time.')
-      ..writeln('Isang mahalagang detalye ang inilabas ng may-ari: $trueDetail.')
+      ..writeln('Nangyari ang ${scene.event} sa $place bandang $time.')
+      ..writeln('Isang mahalagang detalye ang inilabas ng ${scene.whoInformed}: ${scene.trueDetail}.')
       ..writeln('Apat na saksi ang kinausap:')
       ..writeln();
     for (final w in witnesses) {
@@ -426,18 +513,14 @@ class CaseGenerator {
 
     final questions = <CaseQuestion>[];
 
-    // Q1 EASY
+    // Q1 EASY — tungkol sa mismong scene
+    final q1Opts = [scene.trueDetail, ...scene.q1Wrongs]..shuffle(_rng);
     questions.add(CaseQuestion(
       kind: QuestionKind.easy,
-      prompt: 'Ano ang mahalagang detalye na inilabas ng may-ari ng tindahan?',
-      options: [
-        trueDetail,
-        'ilaw na bukas at maliwanag',
-        'madaling araw na bukas ang tindahan',
-        'may CCTV ang tindahan',
-      ],
-      correctIndex: 0,
-      explanation: 'Nakasulat mismo sa teksto: $trueDetail.',
+      prompt: 'Ano ang mahalagang detalye na inilabas ng ${scene.whoInformed}?',
+      options: q1Opts,
+      correctIndex: q1Opts.indexOf(scene.trueDetail),
+      explanation: 'Nakasulat mismo sa teksto: ${scene.trueDetail}.',
     ));
 
     // Q2 DEDUCTION — sino ang sinungaling
@@ -448,7 +531,7 @@ class CaseGenerator {
       options: nameOpts,
       correctIndex: nameOpts.indexOf(liar.name),
       explanation:
-          'Si ${liar.name} lang ang nagbanggit ng "$liarDetail" — pero alam na natin na $trueDetail! Imposibleng makita niya ang mukha ng suspek. Ang kilos niya ay: ${liar.behavior}.',
+          'Si ${liar.name} lang ang nagsabing "${liar.alibi}" — pero napatunayan ng ${scene.whoInformed} na ${scene.trueDetail}! Direktang sumasalungat ito sa facts. Ang kilos niya ay: ${liar.behavior}.',
     ));
 
     // Q3 PSYCH
@@ -489,7 +572,7 @@ class CaseGenerator {
       story: story.toString(),
       resolution:
           'SI ${liar.name.toUpperCase()} ANG NAGSINUNGALING.\n\n'
-          'Ang kanyang pahayag ("$liarDetail") ay direktang sumasalungat sa napatunayang detalye ($trueDetail). Ang kilos niya — ${liar.behavior} — ay suportado lamang, HINDI ang pangunahing ebidensya. Sa totoong investigation, ang say against the record ang bumubulag sa mga pulis.',
+          'Ang kanyang pahayag ("${liar.alibi}") ay direktang sumasalungat sa napatunayang detalye (${scene.trueDetail}). Ang kilos niya — ${liar.behavior} — ay suportado lamang, HINDI ang pangunahing ebidensya. Sa totoong investigation, ang say against the record ang bumubulag sa mga pulis.',
       questions: questions,
     );
   }
@@ -549,9 +632,13 @@ class _MoralDilemma {
   final String tagline;
   final String characters;
   final String setup;
+  final String q1Prompt;
+  final List<String> q1Options;
+  final int q1Correct;
   final List<String> options;
   final int correctIdx;
   final int worstIdx;
+  final String psychTerm;
   final String why;
   final String worstWhy;
 
@@ -559,10 +646,32 @@ class _MoralDilemma {
     required this.tagline,
     required this.characters,
     required this.setup,
+    required this.q1Prompt,
+    required this.q1Options,
+    required this.q1Correct,
     required this.options,
     required this.correctIdx,
     required this.worstIdx,
+    required this.psychTerm,
     required this.why,
     required this.worstWhy,
+  });
+}
+
+class _DeceptionScene {
+  final String event;
+  final List<String> places;
+  final String whoInformed; // e.g. 'may-ari ng tindahan'
+  final String trueDetail; // ang TOTOONG napatunayan
+  final String liarClaim; // ang sinabi ng sinungaling na sumasalungat
+  final List<String> q1Wrongs; // maling options para sa Q1
+
+  _DeceptionScene({
+    required this.event,
+    required this.places,
+    required this.whoInformed,
+    required this.trueDetail,
+    required this.liarClaim,
+    required this.q1Wrongs,
   });
 }
