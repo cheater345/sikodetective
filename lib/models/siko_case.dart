@@ -1,3 +1,35 @@
+enum CaseType {
+  murder(
+    'PAGTITIPUNAN NG KASO',
+    'Isang krimen ang naganap. Tukuyin ang pumatay batay sa ebidensya.',
+  ),
+  morality(
+    'MORAL DILEMMA',
+    'Isang sitwasyong walang madaling sagot. Ano ang GAGAWIN MO?',
+  ),
+  deception(
+    'PAGTETESTIYA NG SINUNGALING',
+    'May sinungaling sa mga saksi. Huliin sila gamit ang ebidensya.',
+  );
+
+  final String label;
+  final String description;
+
+  const CaseType(this.label, this.description);
+}
+
+enum QuestionKind {
+  easy('MADALI — Nasa teksto ang sagot'),
+  deduction('DEDUCTION — Pagsamahin ang mga pahiwatig'),
+  psych('PSYCHOLOGY TEST — Pag-isipan ang tao'),
+  mind('MIND TRAP — Hindi ito kung ano ang tila'),
+  action('ANO ANG GAGAWIN MO? — Ikaw ang nasa sitwasyon');
+
+  final String label;
+
+  const QuestionKind(this.label);
+}
+
 class Suspect {
   final String name;
   final String relation;
@@ -19,43 +51,31 @@ class CaseQuestion {
   final List<String> options;
   final int correctIndex;
   final String explanation;
+  final QuestionKind kind;
 
   CaseQuestion({
     required this.prompt,
     required this.options,
     required this.correctIndex,
     required this.explanation,
+    this.kind = QuestionKind.easy,
   });
 }
 
 class SikoCase {
   final int id;
+  final CaseType type;
   final String title;
-  final String victimName;
-  final String victimAge;
-  final String victimProfession;
-  final String location;
-  final String time;
-  final String weapon;
-  final String motive;
-  final String intro;
-  final List<Suspect> suspects;
-  final String killerName;
+  final String story;
+  final String resolution;
   final List<CaseQuestion> questions;
 
   SikoCase({
     required this.id,
+    required this.type,
     required this.title,
-    required this.victimName,
-    required this.victimAge,
-    required this.victimProfession,
-    required this.location,
-    required this.time,
-    required this.weapon,
-    required this.motive,
-    required this.intro,
-    required this.suspects,
-    required this.killerName,
+    required this.story,
+    required this.resolution,
     required this.questions,
   });
 

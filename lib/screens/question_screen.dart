@@ -79,9 +79,16 @@ class _QuestionScreenState extends State<QuestionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'TANONG ${_qIdx + 1}',
-              style: TextStyle(fontSize: 11, letterSpacing: 2, color: Colors.grey[500]),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD4A017).withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'TANONG ${_qIdx + 1} · ${q.kind.label}',
+                style: const TextStyle(fontSize: 11, letterSpacing: 1, color: Color(0xFFD4A017)),
+              ),
             ),
             const SizedBox(height: 8),
             Text(

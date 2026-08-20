@@ -16,7 +16,7 @@ class VerdictScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('VERDICT')),
+      appBar: AppBar(title: const Text('HATOL')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -29,7 +29,7 @@ class VerdictScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                solved ? 'NALUTAS MO ANG KASO!' : 'NAGSARA ANG KASO...',
+                solved ? 'MAGALING! NALUTAS MO ITO!' : 'MALAPIT KA NA...',
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFD4A017)),
                 textAlign: TextAlign.center,
               ),
@@ -45,21 +45,13 @@ class VerdictScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'ANG TUNAY NA NANGYARI:',
-                        style: TextStyle(fontSize: 12, letterSpacing: 1.5, color: Color(0xFF9E9E9E)),
+                      Text(
+                        sikoCase.type.label,
+                        style: const TextStyle(fontSize: 12, letterSpacing: 1.5, color: Color(0xFF9E9E9E)),
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'SI ${sikoCase.killerName.toUpperCase()} ANG PUMATAY.',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFD4A017)),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Ang motibo ay ${sikoCase.motive}, at ang sandata ay ${sikoCase.weapon}.\n\n'
-                        'Ang kanyang alibi ay may butas, at ang kanyang kilos — '
-                        '${sikoCase.suspects.firstWhere((s) => s.name == sikoCase.killerName).behavior} — '
-                        'ang nagtraydor sa kanya sa harap ng mga imbestigador.',
+                        sikoCase.resolution,
                         style: const TextStyle(fontSize: 14, height: 1.6),
                       ),
                     ],
@@ -72,7 +64,7 @@ class VerdictScreen extends StatelessWidget {
                 icon: const Icon(Icons.home),
                 label: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text('BUMALIK SA HOMEPAGE', style: TextStyle(fontSize: 15, letterSpacing: 1.2)),
+                  child: Text('BAGONG KASO', style: TextStyle(fontSize: 15, letterSpacing: 1.2)),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD4A017),
