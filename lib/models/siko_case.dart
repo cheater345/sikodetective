@@ -10,6 +10,10 @@ enum CaseType {
   deception(
     'PAGTETESTIYA NG SINUNGALING',
     'May sinungaling sa mga saksi. Huliin sila gamit ang ebidensya.',
+  ),
+  riddle(
+    'BRAIN TEASER',
+    'Isang palaisipan na may nakatagong lohika. Hanapin ang biyas na Hindi halata.',
   );
 
   final String label;

@@ -67,7 +67,7 @@ class CaseGenerator {
   ];
 
   SikoCase generate() {
-    final type = CaseType.values[_rng.nextInt(3)];
+    final type = CaseType.values[_rng.nextInt(4)];
     switch (type) {
       case CaseType.murder:
         return _generateMurder();
@@ -75,6 +75,8 @@ class CaseGenerator {
         return _generateMoral();
       case CaseType.deception:
         return _generateDeception();
+      case CaseType.riddle:
+        return _generateRiddle();
     }
   }
 
@@ -577,6 +579,324 @@ class CaseGenerator {
     );
   }
 
+  // ===================== RIDDLE / BRAIN TEASER =====================
+  SikoCase _generateRiddle() {
+    final riddles = _riddles;
+    final r = riddles[_rng.nextInt(riddles.length)];
+
+    final questions = <CaseQuestion>[];
+
+    // Q1 EASY — naka-connect sa kwento
+    final q1Opts = List.of(r.q1Options)..shuffle(_rng);
+    final q1Correct = r.q1Options[r.q1Correct];
+    questions.add(CaseQuestion(
+      kind: QuestionKind.easy,
+      prompt: r.q1Prompt,
+      options: q1Opts,
+      correctIndex: q1Opts.indexOf(q1Correct),
+      explanation: 'Nakasulat mismo sa teksto: $q1Correct.',
+    ));
+
+    // Q2 DEDUCTION — ang aktwal na sagot
+    final mainOpts = List.of(r.options)..shuffle(_rng);
+    final mainCorrect = r.options[r.correctIdx];
+    questions.add(CaseQuestion(
+      kind: QuestionKind.deduction,
+      prompt: r.prompt,
+      options: mainOpts,
+      correctIndex: mainOpts.indexOf(mainCorrect),
+      explanation: r.answerExplanation,
+    ));
+
+    // Q3 PSYCH — ang prinsipyong sikolohikal
+    final psychOpts = List.of(r.psychOptions)..shuffle(_rng);
+    final psychCorrect = r.psychOptions[r.psychCorrect];
+    questions.add(CaseQuestion(
+      kind: QuestionKind.psych,
+      prompt: r.psychPrompt,
+      options: psychOpts,
+      correctIndex: psychOpts.indexOf(psychCorrect),
+      explanation: r.psychExplain,
+    ));
+
+    // Q4 MIND TRAP — ang tunay na bitag
+    final q4Opts = List.of(r.q4Options)..shuffle(_rng);
+    final q4Correct = r.q4Options[r.q4Correct];
+    questions.add(CaseQuestion(
+      kind: QuestionKind.mind,
+      prompt: r.q4Prompt,
+      options: q4Opts,
+      correctIndex: q4Opts.indexOf(q4Correct),
+      explanation: r.q4Explain,
+    ));
+
+    return SikoCase(
+      id: _caseId,
+      type: CaseType.riddle,
+      title: r.title,
+      story: r.story.trim().endsWith('?')
+          ? r.story
+          : '${r.story}\n\n${r.prompt}',
+      resolution: '$mainCorrect\n\n${r.answerExplanation}',
+      questions: questions,
+    );
+  }
+
+  static final List<_Riddle> _riddles = [
+    _Riddle(
+      title: 'Ang Tatlong Pinto',
+      story: 'Isang lalaki ang nakatakas sa presinto at may tatlong pinto siyang pagpipilian para makaiwas sa mga humahabol. Ang laman ng unang pinto ay mga retiradong sundalo. Ang laman ng ikalawang pinto ay mga pulis. Ang ikatlong pinto naman ay puno ng mga tigre na hindi pa kumakain sa loob ng tatlong taon.',
+      q1Prompt: 'Ayon sa kwento, ano ang nasa ikatlong pinto?',
+      q1Options: [
+        'mga tigre na hindi pa kumakain ng tatlong taon',
+        'mga retiradong sundalo',
+        'mga pulis',
+        'mga asong labanan',
+      ],
+      q1Correct: 0,
+      prompt: 'Saan dapat pumasok at magtago ang nakatakas na lalaki?',
+      options: [
+        'Sa ikatlong pinto — patay na ang tigre dahil 3 taon nang walang makain',
+        'Sa unang pinto — matamlay na ang mga retiradong sundalo',
+        'Sa ikalawang pinto — pulis ang humahabol kaya ligtas siya',
+        'Wala sa tatlo — dapat lumabas na lang siya at tumakbo',
+      ],
+      correctIdx: 0,
+      answerExplanation:
+          'Ang mahalagang linya ay "mga tigre na hindi pa kumakain sa loob ng tatlong taon" — walang tigre ang makakaligtas nang 3 taon nang walang pagkain, kaya PATAY na sila. Ang ikatlong pinto ang pinakaligtas. Ang nagliligaw sa karamihan ay ang takot sa salitang "tigre" bago pa man isipin ang lohika ng detalye.',
+      psychPrompt: 'Aling psychological reaction ang nagpapadulas sa tao na piliin agad ang isa pang pinto nang hindi iniisip ang mga salita?',
+      psychOptions: [
+        'Emotional response — agad na takot sa salitang "tigre"',
+        'Confirmation bias — hanap lang ng patunay sa unang hinala',
+        'Sunk cost — hindi kayang bitiwan ang nasabing plano',
+        'Halo effect — tingin sa tao bilang mabuti dahil sa itsura',
+      ],
+      psychCorrect: 0,
+      psychExplain:
+          'Ang salitang "tigre" ay nagti-trigger ng takot bago pa man magtrabaho ang lohika. Iyan ang emosyonal na tugon — ang gut reaction na siyang dahilan kung bakit marami ang nagkakamali: kumikilos sila sa takot, hindi sa pagbabasa ng bawat detalye.',
+      q4Prompt: 'Ang tunay na BITAG sa palaisipang ito ay...',
+      q4Options: [
+        'Ang magmadali at paniwalaan ang unang naiisip',
+        'Ang sobrang pag-iisip sa mga salita',
+        'Ang pagtatanong sa mga humahabol',
+        'Ang pag-aatubiling pumili',
+      ],
+      q4Correct: 0,
+      q4Explain:
+          'Ang bitag ay ang UNANG reaksyon: kapag narinig mo ang "tigre," agad kang natatakot at walang nang iniisip pang iba. Kung titigil ka at babasahin mo nang mabuti ang buong detalye ("tatlong taong hindi kumain"), malalaman mong ang ikatlong pinto ay walang panganib. Ang pagmamadali ang pumapatay ng lohika.',
+    ),
+    _Riddle(
+      title: 'Ang Posporo sa Dilim',
+      story: 'Madilim ang isang silid. Meron lamang kandila, isang lamparang de-langis, at isang gas stove. Mayroon kang ISANG posporo lang. Ano ang KAUNANG-una mong sisindihan upang makakita ka sa dilim?',
+      q1Prompt: 'Ayon sa kwento, ano ang mga nakikita mo sa madilim na silid?',
+      q1Options: [
+        'kandila, lamparang de-langis, at gas stove',
+        'posporo at flashlight',
+        'mga kandila at flashlight',
+        'gas stove at kalan',
+      ],
+      q1Correct: 0,
+      prompt: 'Ano ang unang dapat mong sisindihan?',
+      options: [
+        'Ang posporo — dahil wala kang ibang apoy para sisindihin ang iba',
+        'Ang gas stove — para maliwanagan agad',
+        'Ang lamparang de-langis — para buo ang ilaw',
+        'Ang kandila — para maliit lang ang apoy',
+      ],
+      correctIdx: 0,
+      answerExplanation:
+          'Ang sagot: ang posporo mismo ang unang sisindihin — dahil yan ang PINAGMULAN ng apoy. Hindi mo masisindihan ang kandila, lampara, o stove kung hindi mo muna sisindihin ang posporo. Susundan mo ang sunod-sunod na hakbang: posporo → apoy → ilaw. Ang trick dito ay hindi ka tumatalon agad sa "ilaw" kundi iniisip mo kung paano ka dadating doon.',
+      psychPrompt: 'Anong mindset ang hinahanap sa palaisipang ito?',
+      psychOptions: [
+        'Paatras na pag-iisip — simulan ang pinagmulan ng apoy bago ang resulta',
+        'Madaling pag-iisip — kunin agad ang pinakamaliwanag',
+        'Pag-iisip na pang-takot — matakot sa dilim bago pa man mag-isip',
+        'Pagtulad sa nakagawian — parang laging kandila ang unang sisindihin',
+      ],
+      psychCorrect: 0,
+      psychExplain:
+          'Ang palaisipang ito ay tungkol sa sequential thinking — sinisimulan mo sa pinagmulan ng apoy (ang posporo) bago ang layunin (ilaw). Ang mga taong naiipit ay tumatalon agad sa "ilaw" (resulta) nang hindi iniisip ang maliit na hakbang bago nito.',
+      q4Prompt: 'Ang bitag dito ay ang pag-aakalang…',
+      q4Options: [
+        'may iba pang mapagkukunan ng apoy bukod sa posporo',
+        'ang kandila ang pinakamaliit na sisindihin',
+        'ang gas stove ang pinakamabilis umilaw',
+        'laging mas madilim sa gabi kaysa sa umaga',
+      ],
+      q4Correct: 0,
+      q4Explain:
+          'Ang bitag: karamihan ay sinasagot ang "kandila" o "lampara" dahil iniisip nila ang layunin (ilaw) imbes na ang hakbang. Ang TOTOONG unang hakbang ay ang pinagmulan ng apoy — ang posporo. Kapag wala kang sisindihang posporo, wala kang magagamit na apoy para sa lahat ng iba.',
+    ),
+    _Riddle(
+      title: 'Ang Tandang sa Bubong',
+      story: 'Isang tandang (lalaking manok) ang nakatayo sa tuktok ng isang bubong na nakaharap sa kanluran. Nangitlog ito. Saang direksyon babagsak ang itlog?',
+      q1Prompt: 'Ayon sa kwento, saan nakaharap ang tandang?',
+      q1Options: [
+        'sa kanluran',
+        'sa silangan',
+        'sa hilaga',
+        'sa timog',
+      ],
+      q1Correct: 0,
+      prompt: 'Saang direksyon babagsak ang itlog?',
+      options: [
+        'Hindi ito babagsak — walang nangitlog dahil lalaki ang tandang',
+        'Sa kanluran — kung saan nakaharap siya',
+        'Sa silangan — kabaligtaran ng kanyang harapan',
+        'Pababa — papunta sa lupa',
+      ],
+      correctIdx: 0,
+      answerExplanation:
+          'Ang trick ay nasa isang salita: "tandang" ay lalaking manok — HINDI ito pwedeng mangitlog. Ang mga taong nagmamadali ay sumasagot agad ng direksyon habang iniisip ang itlog nang hindi napapansin na ang tandang ay lalaki.',
+      psychPrompt: 'Ano ang dahilan kung bakit marami ang nakakaligtaan ang sagot?',
+      psychOptions: [
+        'Assumption — hindi nila iniisip na ang tandang ay lalaki',
+        'Confirmation bias — hanap lang ng direksyon',
+        'Halo effect — tingin sa manok ay pangkalahatan',
+        'Priming — naaalala lang ang mga normal na pangingitlog',
+      ],
+      psychCorrect: 0,
+      psychExplain:
+          'Ang assumption error: tinatanong mo ang iyong sarili ng "saang direksyon babagsak" habang hindi mo ini-check kung "pwede bang mangitlog ang tandang?" Ang epektibong pag-solve ay ang pagtigil at pagtawag sa bawat premise bago sumagot.',
+      q4Prompt: 'Ang bitag dito ay ang biglang pag-focus sa...',
+      q4Options: [
+        'direksyon imbes na sa posibilidad ng pangyayari',
+        'tandang, imbes na sa ibang mga manok',
+        'bubong, imbes na sa loob ng bahay',
+        'kanluran, imbes na sa silangan',
+      ],
+      q4Correct: 0,
+      q4Explain:
+        'Ang bitag: ang kwento ay nilagyan ng "nakaharap sa kanluran" para sabihin sa iyo kung saan ang pwesto — para ma-focus ang isip mo sa direksyon at kumalimot ka sa mas mahalagang detalye: ang tandang ay hindi nangingitlog. Ang layunin ng naka-coding na detalye ay iligaw ka sa lohikal na impossibility.',
+    ),
+    _Riddle(
+      title: 'Ang Lalaki sa Elevator',
+      story: 'Isang lalaki ang nakatira sa ika-10 palapag ng isang building. Tuwing umaga, sumasakay siya ng elevator papunta sa ground floor para magtrabaho. Tuwing gabi, sumasakay siya ng elevator pero bumababa siya sa ika-7 na palapag at nilalakad niya ang 3 palapag papunta sa kanyang apartment. Bakit hindi siya sumakay hanggang sa ika-10?',
+      q1Prompt: 'Saang palapag nakatira ang lalaki?',
+      q1Options: [
+        'ika-10 palapag',
+        'ika-7 palapag',
+        'ika-3 palapag',
+        'ground floor',
+      ],
+      q1Correct: 0,
+      prompt: 'Bakit laging sa ika-7 palapag siya bumababa patungong bahay?',
+      options: [
+        'Pandak siya — hindi niya maabot ang pindutan ng ika-10',
+        'Mahina ang elevator sa itaas ng ika-7',
+        'Madilim ang hallway sa ika-8 pataas',
+        'Tumatakas siya sa katabi sa ika-8',
+      ],
+      correctIdx: 0,
+      answerExplanation:
+          'Ang sagot: pandak ang lalaki at hindi niya maabot ang pindutan ng ika-10 palapag sa elevator. Pwede niya itong maabot nang umaga kapag bababa siya (ground floor button ay nasa baba at naaabot), pero hindi niya maabot ang ika-10 sa gabi. Ang palaisipang ito ay test ng observasyon sa mga limitasyon ng pisikal na mundo.',
+      psychPrompt: 'Anong uri ng pag-iisip ang hinahanap dito?',
+      psychOptions: [
+        'Batas ng pisikal na limitasyon — hindi lahat ay tungkol sa sikolohikal na lalim',
+        'Malalim na conspiracy — may nakatagong balak',
+        'Teknikal na sira ng elevator',
+        'Sosyal na takot sa kapitbahay',
+      ],
+      psychCorrect: 0,
+      psychExplain:
+          'Ang palaisipang ito ay tungkol sa Occam\'s razor — ang pinaka-simpleng paliwanag na akma sa lahat ng detalye ay ang pinakamalamang. Ang pandak na lalaki ay isang simpleng pisikal na katotohanan na hindi natin iniisip dahil hindi natin ito "nakikita" sa kwento.',
+      q4Prompt: 'Ang bitag dito ay ang pag-aakalang...',
+      q4Options: [
+        'ang dahilan ay kailangang sikolohikal o teknikal na kumplikado',
+        'laging sira ang elevator',
+        'may kasama siya sa elevator tuwing gabi',
+        'ang ground floor button ay mas mahirap abutin',
+      ],
+      q4Correct: 0,
+      q4Explain:
+        'Ang bitag: kapag nakakita tayo ng misteryo, naghahanap tayo ng komplikadong dahilan — pero para sa palaisipang ito, ang sagot ay simple at pisikal. Ang paghanap ng "lalim" kung saan walang lalim ay ang tunay na hadlang sa pag-solve.',
+    ),
+    _Riddle(
+      title: 'Ang Tatlong Switch',
+      story: 'Sa isang kwarto ay may tatlong bumbilya. Sa labas ay may tatlong switch na nakakonekta sa mga ito. Makakapasok ka lang sa kwarto ng ISANG beses. Paano mo matutuklasan kung aling switch ang kumokontrol sa aling bumbilya?',
+      q1Prompt: 'Ilang beses ka lang makakapasok sa kwarto?',
+      q1Options: [
+        'Isang beses',
+        'Dalawang beses',
+        'Tatlong beses',
+        'Hindi ka makakapasok',
+      ],
+      q1Correct: 0,
+      prompt: 'Paano mo malalaman kung aling switch ang para sa aling bumbilya?',
+      options: [
+        'Buksan ang Switch 1 nang ilang minuto, patayin ito, buksan ang Switch 2, saka pumasok — mainit ang bumulbula sa Switch 1',
+        'Isa-isahin ang switch habang nakapasok sa kwarto',
+        'Tulungan para ibukas ang pinto at may kabit na camera',
+        'Hulaan na lang kasi pareho-todo ang lahat ng bumbilya',
+      ],
+      correctIdx: 0,
+      answerExplanation:
+          'Ang solution: i-on ang Switch 1 sa loob ng ilang minuto, saka patayin. I-on ang Switch 2 at pumasok sa kwarto. Ang bumbilyang NAKAON ay Switch 2. Ang bumbilyang PATAY pero MAINIT ay Switch 1. Ang bumbilyang PATAY at MALAMIG ay Switch 3. Ginagamit nito ang init ng bumbilya bilang dagdag na impormasyon balyong ang simpleng ilaw.',
+      psychPrompt: 'Ano ang dagdag na mapagkukunan ng impormasyon na hindi mo iniisip?',
+      psychOptions: [
+        'Ang init ng bumbilya — hindi lang ang ilaw ang senyales',
+        'Ang tunog ng switch — pandinig ang gamit',
+        'Ang amoy ng kwarto — pandama ang gamit',
+        'Ang timbang ng switch — dama ang presyon',
+      ],
+      psychCorrect: 0,
+      psychExplain:
+          'Ang trick ay ang pag-iisip "sa labas ng kahon": hindi lang ang ON/OFF ng ilaw ang itinuring na signal — pati ang INIT ng bumbilya ay isa pang dimensyon ng impormasyon. Ang mga lunas ay lumalawak kapag tumingin ka ng lampas sa pinaka-halatang senyales.',
+      q4Prompt: 'Ang bitag dito ay ang pag-aakalang ang sagot ay…',
+      q4Options: [
+        'nakasalalay lang sa pag-ON/OFF ng ilaw kasi hindi mo iniisip ang init',
+        'nakasalalay sa bilis ng pagtakbo papuntang kwarto',
+        'kailangan ng dalawang tao para masilip',
+        'imposible gawin kasi babasagin ang bombilya',
+      ],
+      q4Correct: 0,
+      q4Explain:
+        'Ang bitag: iniisip natin na ang "ilaw" lang ang signal na magagamit, kaya akala natin imposible o kailangan ng maraming pasok. Ang tunay na sagot ay nasa paggamit ng init bilang karagdagang signal — isang bagay na hindi natin agad napapansin.',
+    ),
+    _Riddle(
+      title: 'Ang Isda sa Tangke',
+      story: 'May 10 isda sa isang tangke. Dalawa ang lumubog, apat ang lumangoy palayo, at tatlo ang namatay. Ilan ang isda ang natira sa tangke?',
+      q1Prompt: 'Ayon sa kwento, ilan ang isda sa tangke noong simula?',
+      q1Options: [
+        '10 isda',
+        '8 isda',
+        '6 isda',
+        '3 isda',
+      ],
+      q1Correct: 0,
+      prompt: 'Ilan ang isda ang natira sa tangke?',
+      options: [
+        'Lahat ng 10 — ang isda ay nasa tangke pa rin kahit lumubog o namatay',
+        '5 isda — kasi ang mga lumangoy palay ay wala na',
+        '7 isda — kasi 3 ang namatay',
+        '2 isda — kasi kakaunti lang ang natakwil',
+      ],
+      correctIdx: 0,
+      answerExplanation:
+          'Ang sagot ay 10. Ang lahat ng isda ay nasa tangke pa rin — ang paglubog at pagkamatay ay hindi pwedeng magtanggal sa kanila sa tangke. Ang mga lumangoy "palayo" sa isang tangke ay hindi naman talaga makakaalis. Ang trick ay ang pagbibigay ng mga numerong "lubog, lumangoy, namatay" para ipagalaw ang iyong atensyon sa pagtangal.',
+      psychPrompt: 'Bakit tayo nalinlang ng mga bilang na "lumubog, lumangoy palayo, namatay"?',
+      psychOptions: [
+        'Dahil sinasabi nating "lubog/lumangoy/namatay" para ipagbilang mo ang inalis sa halip na magbilang ng natitira',
+        'Dahil lahat tayo ay hindi marunong magbilang',
+        'Dahil mahal ang isda sa tindahan',
+        'Dahil ang tangke ay walang tubig',
+      ],
+      psychCorrect: 0,
+      psychExplain:
+        'Ang epekto ay sa pag-frame: inilalayo ng kwento ang focus sa "pagtangal" (lubog/lumangoy/namatay) kaya imbes na manatili sa "ilang lahat ang nasa tangke," nagbibilang tayo ng ibinawas. Ang reframing ng problema ay mas mahalaga pa sa bilang.',
+      q4Prompt: 'Ang tunay na bitag dito ay…',
+      q4Options: [
+        'ang pagtatanong na "ilan ang natira" imbes na "lahat ba ay nasa tangke pa rin?"',
+        'ang paggamit ng malaking tangke na may kasamang mga bato',
+        'ang pagsagot ng bilis sa halip na tama',
+        'ang paghanap ng pangalan ng isda',
+      ],
+      q4Correct: 0,
+      q4Explain:
+        'Ang bitag: nagtatanong tayo ng "ilan ang NATIRA" kaya nagbibilang tayo ng bawas. Kung tatanungin mo ang tamang tanong ("lahat ba ay nasa tangke pa rin?"), makikita mo na walang nakaalis sa tangke. Ang tamang tanong ay kalahati na ng tamang sagot.',
+    ),
+  ];
+
   // ------------------------- helpers -------------------------
   String _pickName(bool female) {
     final f = female ? firstNameF : firstNameM;
@@ -673,5 +993,45 @@ class _DeceptionScene {
     required this.trueDetail,
     required this.liarClaim,
     required this.q1Wrongs,
+  });
+}
+
+class _Riddle {
+  final String title;
+  final String story;
+  final String q1Prompt;
+  final List<String> q1Options;
+  final int q1Correct;
+  final String prompt;
+  final List<String> options;
+  final int correctIdx;
+  final String answerExplanation;
+  final String psychPrompt;
+  final List<String> psychOptions;
+  final int psychCorrect;
+  final String psychExplain;
+  final String q4Prompt;
+  final List<String> q4Options;
+  final int q4Correct;
+  final String q4Explain;
+
+  const _Riddle({
+    required this.title,
+    required this.story,
+    required this.q1Prompt,
+    required this.q1Options,
+    required this.q1Correct,
+    required this.prompt,
+    required this.options,
+    required this.correctIdx,
+    required this.answerExplanation,
+    required this.psychPrompt,
+    required this.psychOptions,
+    required this.psychCorrect,
+    required this.psychExplain,
+    required this.q4Prompt,
+    required this.q4Options,
+    required this.q4Correct,
+    required this.q4Explain,
   });
 }
