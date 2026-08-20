@@ -5,9 +5,33 @@ class CaseGenerator {
   final Random _rng;
   final int _caseId;
 
+  // Tracks a shuffled "bag" per pool so that every moral dilemma, deception
+  // scene, and riddle is used once before any of them repeat.
+  static final Map<String, List<int>> _poolBags = {};
+  static final Map<String, int> _bagPos = {};
+
   CaseGenerator({int? caseId, int? seed})
       : _caseId = caseId ?? 1,
         _rng = Random(seed);
+
+  int _nextFromBag(String pool, int length) {
+    var bag = _poolBags[pool];
+    var pos = _bagPos[pool] ?? 0;
+    if (bag == null || pos >= bag.length) {
+      final prevLast = bag != null && bag.isNotEmpty ? bag.last : null;
+      bag = List<int>.generate(length, (i) => i)..shuffle(_rng);
+      if (prevLast != null && bag.first == prevLast && length > 1) {
+        final swapIdx = 1 + _rng.nextInt(length - 1);
+        final tmp = bag[0];
+        bag[0] = bag[swapIdx];
+        bag[swapIdx] = tmp;
+      }
+      _poolBags[pool] = bag;
+      pos = 0;
+    }
+    _bagPos[pool] = pos + 1;
+    return bag[pos];
+  }
 
   // ------------------------- shared pools -------------------------
   static const List<String> firstNameM = [
@@ -25,7 +49,9 @@ class CaseGenerator {
   static const List<String> professions = [
     'guro sa haiskul', 'seguridad guwardya', 'nars sa ospital', 'driver ng jeepney',
     'karpintero', 'mananahi', 'barbero', 'kondoktor ng bus', 'kusa sa sari-sari store',
-    'pulis retirado', 'chef ng restaurant', 'mekaniko',
+    'pulis retirado', 'chef ng restaurant', 'mekaniko', 'dentista', 'teller sa bangko',
+    'magtatahi', 'pharmacist', 'call center agent', 'bumbero', 'kartero',
+    'negosyante ng talipapa', 'security analyst', 'veterinarian sa zoo lab',
   ];
   static const List<String> locations = [
     'isang lumang bahay sa Sampaloc, Maynila',
@@ -36,25 +62,40 @@ class CaseGenerator {
     'ang stairs ng tenement sa Tondo',
     'isang cafe sa Makati',
     'isang boarding house sa Baguio',
+    'isang boarding inn sa Zambales',
+    'ang rooftop ng isang condominium sa Pasig',
+    'isang sementeryo sa Tarlac',
+    'isang abandoned na simbahan sa Bulacan',
+    'ang basement ng isang mall sa Paranaque',
+    'isang probinsyang baryo sa Catanduanes',
+    'ang waiting shed sa Quezon Avenue',
+    'isang karinderya sa Lucena',
   ];
   static const List<String> times = [
     'alas-diyes ng gabi', 'alas-tres ng madaling araw', 'alas-singko ng hapon',
     'alas-onse ng umaga', 'alas-otso ng gabi', 'alas-dose ng hatinggabi',
+    'alas-kuwatro ng madaling araw', 'alas-sais ng umaga', 'alas-onse ng gabi',
   ];
   static const List<String> titlesMurder = [
     'Lihim ng Gabi', 'Ang Pasan na Katotohanan', 'Mga Balot na Mukha',
     'Huling Mensahe', 'Anino sa Dilim', 'Ang Nakatagong Kadahilanan',
     'Pusong Bato', 'Alaala ng Biktima', 'Saksi sa Katahimikan', 'Bakas ng Kahapon',
+    'Isang Metronom ng Kasinungalingan', 'Ang Gabi ng Tandang Sora',
+    'Silong ng Paantok', 'Ang Kwarto Nang Walang Bubong', 'Kontego sa Daan',
   ];
   static const List<String> titlesMoral = [
     'Ang Pagpili', 'Sa Kabila ng Daan', 'Ang Pabigat na Desisyon',
     'Barya-barya lang', 'Ang Utang na Di Mamamatay', 'Panibagong Umaga',
     'Ang Nakatagong Kabutihan', 'Susi sa Pinto', 'Ang Mahabang Gabi', 'Huling Subok',
+    'Ang Ikaapat na Bintana', 'Lihim sa Ikaapat na Kwarto', 'Ang Pusong Hindi Sumusuko',
+    'Kabanata ng Pagbangon', 'Isang Yakap sa Dilim',
   ];
   static const List<String> titlesDeception = [
     'Puso ng Mambabasa', 'Salita ng Saksi', 'Ang Daya sa Detalye',
     'Huli sa Akto', 'Boses ng Katotohanan', 'Ang Ikatlong Kwento',
     'Mukha ng Kasinungalingan', 'Tunay na Salaysay', 'Tabbing ng Mata', 'Ang Sabay na Kwento',
+    'Tatlong Daan ng Buhay', 'Ang Nakatagong Katotohanan', 'Buhay na Larawan',
+    'Palabas sa Gabi', 'Pagbabalat-kayo ng Puso',
   ];
 
   static const List<String> behaviors = [
@@ -64,10 +105,14 @@ class CaseGenerator {
     'palaging ngumingiti nang pigil — parang alam na ang eksaktong mangyayari',
     'mabilis na nagpalit ng kwento nang mahuli sa sablay',
     'kabado ngunit pilit na nagmumukhang kalmado',
+    'paulit-ulit na inaayos ang suot na damit habang nagsasalita',
+    'tumitingin sa paligid bago sumagot — parang naghahanap ng masasandigan',
+    'sobrang daldal habang sumasagot — malayo na ang takbo ng kwento',
+    'madalas huminto at maghahanap ng tamang salita bago magpatuloy',
   ];
 
   SikoCase generate() {
-    final type = CaseType.values[_rng.nextInt(4)];
+    final type = CaseType.values[_nextFromBag('type', 4)];
     switch (type) {
       case CaseType.murder:
         return _generateMurder();
@@ -206,17 +251,25 @@ class CaseGenerator {
     'isang matalim na bolo', 'isang basag na bote', 'isang steel pipe',
     'isang martilyo', 'isang lubid na nylon', 'isang ice pick',
     'isang antigong ceramic vase', 'isang kusinang kutsilyo',
+    'isang semento na pamalo', 'isang wire na electric cord',
+    'isang kawali na bakal', 'isang bakal na tubo ng gripo',
   ];
   static const List<String> _murderMotives = [
     'paghihiganti sa lumang alitan', 'pagnanakaw ng nakatagong kayamanan',
     'paninibugho sa relasyon', 'isang mabigat na utang na hindi nabayaran',
     'pagtakpan ang lihim na pakikipagsabwatan', 'isang away sa mana',
     'pagdamdam sa pagtaksil sa negosyo',
+    'isang nakaraan na hindi mabura sa emosyon',
+    'pag-imbak ng pera na di nagbabayad ng utang',
+    'isang away sa inutang na bahay at lupa',
+    'pagtakpan ang maling resibo sa kompanya',
   ];
   static const List<String> _relations = [
     'kapitbahay', 'pinsan', 'kasamang boarder', 'dating katrabaho', 'bestfriend',
     'asawa ni dating kaibigan', 'kaklase sa seminary', 'suki sa tindahan',
     'kapitbahay na lagi nag-aaway', 'kakilala sa simbahan',
+    'miyembro ng simbahan', 'kapatid sa maternal side', 'malapit na kaopisina',
+    'tindera sa palengke', 'katiwala sa opisina', 'dating guro',
   ];
 
   // ===================== MORAL DILEMMA =====================
@@ -342,9 +395,177 @@ class CaseGenerator {
         why: 'Ang tamang hakbang ay hindi palaging iulat kaagad. Una, bigyan siya ng pagkakataong magbago. Kung hindi siya makikinig at may ebidensya ka na, saka ka mag-ulat — ito ang pag-aagaw sa "grey zone" ng moralidad: pakikisama vs. responsibilidad.',
         worstWhy: 'Ang pag-invest sa ilegal na negosyo ay ginagawa kang ganap na kasabwat — hindi na lamang saksi. Ang perang kikitain ay mula sa biktima ng pag-aapuhap ay "maruming pera" na magpapaibig sa iyo sa sistema.',
       ),
+      _MoralDilemma(
+        tagline: 'Nakahuli ka ng magnanakaw na dalang-dala ang pitaka ng matanda.',
+        characters: 'Ikaw, ang magnanakaw, ang matanda, at ang pulis sa malapit',
+        setup: 'Nakikita mo ang isang lalaking mabilis na hinawakan ang pitaka ng nakatalikod na matanda at tumakbo. Nakahawak ka na sa kanya bago pa man siya makalampas. Ang pitaka ay hawak niya pa rin.',
+        q1Prompt: 'Ayon sa kwento, ano ang hinablot ng lalaki sa matanda?',
+        q1Options: [
+          'Ang pitaka habang nakatalikod ang matanda',
+          'Ang relo habang may suot na guwantes',
+          'Ang cellphone habang natutulog',
+          'Ang bayong na may dalang pera',
+        ],
+        q1Correct: 0,
+        options: [
+          'Itawag agad sa pulis habang hawak pa siya',
+          'Ibitaw siya at pasawayin — baka may saktan',
+          'Kunin ang pitaka at ibalik sa matanda, saka siya papakawalan',
+          'Maliit na bagay lang iyon — hayaang umalis',
+        ],
+        correctIdx: 0,
+        worstIdx: 3,
+        psychTerm: 'Justice orientation',
+        why: 'Ang pagtawag sa pulis habang hawak ang taong may pitaka ay nagpoprotekta sa ari-arian ng matanda at hindi ka kumakapit sa init ng sandali na maaaring lumala sa personal na pagharap. Ang makataong hakbang ay ang pagsangkot ng awtoridad — hindi pagparusa nang sarili mo.',
+        worstWhy: 'Ang sabihing "maliit na bagay lang" ay pagwawalang-bahala sa karapatan ng matanda. Ang magnanakaw ay pwedeng bumalik at magnakaw muli. Ang hindi pag-aksyon ay tahimik na pag-apruba sa pagnanakaw.',
+      ),
+      _MoralDilemma(
+        tagline: 'Nakita mong binubully ng mga kaklase ang isang mag-aaral.',
+        characters: 'Ikaw, ang binubully, at ang mga kaklase',
+        setup: 'Sa corridor, napalibutan ng limang kaklase ang isang mag-aaral at pinagtatawanan siya ng malakas dahil sa kanyang damit at pangalan. Palaging paulit-ulit ang ganito, at walang guro na malapit.',
+        q1Prompt: 'Ayon sa kwento, ano ang dahilan ng pagtuya sa mag-aaral?',
+        q1Options: [
+          'Ang kanyang damit at pangalan',
+          'Ang kanyang itsura at tono ng boses',
+          'Ang kanyang cellphone na luma',
+          'Ang kanyang relihiyon at lugar',
+        ],
+        q1Correct: 0,
+        options: [
+          'Tumabi sa kanya at harapin ang grupo nang mahinahon',
+          'Iwanan ang lugar — hindi ito laban ko',
+          'Sumali sa tuya para hindi ako mapansin',
+          'Kuhanan ng video at i-post online',
+        ],
+        correctIdx: 0,
+        worstIdx: 3,
+        psychTerm: 'Bystander intervention',
+        why: 'Ang pagtayo sa tabi ng biktima at pagharap sa grupo nang mahinahon (hindi agresibo) ay isang "bystander intervention" — nababawasan nito ang kapangyarihan ng grupo at binibigyan ng ligtas na pwesto ang biktima. Hindi mo kailangang makipag-away para makatulong.',
+        worstWhy: 'Ang pag-post ng video online ay nagpaparami sa kahihiyan at hindi tumutulong sa biktima — ito ay ibang uri ng pambubully. Ang pagkuha ng "content" mula sa pagdurusa ng iba ay ginagawa ka ring bahagi ng pinsala.',
+      ),
+      _MoralDilemma(
+        tagline: 'May nakita kang wallet na may malaking pera sa loob ng jeep.',
+        characters: 'Ikaw at ang isang tao na umalis na sa jeep',
+        setup: 'Sa ilalim ng upuan ng jeep ay may nakita kang wallet na puno ng pera. Walang nakakaalam na nakita mo ito. Ang jeep ay bababa ka na sa susunod na hinto.',
+        q1Prompt: 'Ayon sa kwento, saan mo nakita ang wallet?',
+        q1Options: [
+          'Sa ilalim ng upuan sa jeep',
+          'Sa loob ng bag ng sabay mo',
+          'Sa gilid ng daan',
+          'Sa floor lamp sa bahay',
+        ],
+        q1Correct: 0,
+        options: [
+          'Ibigay sa konduktor ang wallet para mahawakan ng may-ari',
+          'Dalhin ang wallet at hanapin ang may-ari sa social media',
+          'Itago ang wallet — walang nakakakita naman',
+          'Iwanan kung saan ito — hindi ko ito laban',
+        ],
+        correctIdx: 0,
+        worstIdx: 2,
+        psychTerm: 'Integrity',
+        why: 'Ang pag-aalala sa pagsasakay ng wallet sa konduktor (o kaya ay sa obrang pampublikong lunas) ay praktikal at makatao — ito ay nananatili sa pampublikong sistema at hindi ka kumikilos nang lihim. Ang paghanap sa may-ari online ay pwede ring ningas-kugon.',
+        worstWhy: 'Ang pagtago ng wallet ng iba ay pagnanakaw — kahit na walang nakakita. Ang "walang nakakakita" ay hindi nangangahulugang tama. Ang integrity ay ang ginagawa mo kapag walang nagmamasid.',
+      ),
+      _MoralDilemma(
+        tagline: 'Nalaman mong mali ang paglabas ng suweldo ng kapatid mo.',
+        characters: 'Ikaw at ang kapatid mo',
+        setup: 'Nagpasweldo ang kapatid mo at napansin niyang sobra ang natanggap niya ng tatlong libo. Wala pang nagtatanong tungkol dito at hindi alam ng kompanya.',
+        q1Prompt: 'Ayon sa kwento, magkano ang sobrang natanggap ng kapatid mo?',
+        q1Options: [
+          'Tatlong libong piso',
+          'Limang libong piso',
+          'Dalawang daang piso',
+          'Sampung libong piso',
+        ],
+        q1Correct: 0,
+        options: [
+          'Imungkahi sa kapatid na ipagbigay-alam agad sa HR',
+          'Payuhan siyang itago muna hanggang magtanong sila',
+          'Sabihing maging maalaga sa paggastos para di sila manghinala',
+          'Kunin ang parte mo dahil obligasyon din nila sa pamilya',
+        ],
+        correctIdx: 0,
+        worstIdx: 3,
+        psychTerm: 'Honesty',
+        why: 'Ang pag-amin ng labis na sahod ay maliit na halaga sa kasalukuyan kaysa sa pangmatagalang tiwala. Ang maagang pag-ulat ang pinakamabilis na paraan para maiwasan ang mas malalaking problema sa HR.',
+        worstWhy: 'Ang pagkuha ng parte sa sobrang sahod ng kapatid ay pagpapalubha ng pagnanakaw — ang sobrang pera ay hindi iyo, at ang paggastos nito ay pagtangkilik sa maling bagay.',
+      ),
+      _MoralDilemma(
+        tagline: 'Nakita mong may kumakatok sa bahay ng matandang babae.',
+        characters: 'Ikaw at ang matandang babae',
+        setup: 'May isang lalaki ang nagpupumilit na pumasok sa bahay ng matandang babae sa inyong barangay. Nabasa mong hindi siya inaanak at nakatatakot ang pakikipag-usap. Ang matanda ay madalas kasi mag-isa.',
+        q1Prompt: 'Ayon sa kwento, sino ang nagpupumilit na pumasok sa bahay ng matanda?',
+        q1Options: [
+          'Isang lalaki na hindi inaanak',
+          'Isang babae na kapitbahay',
+          'Isang pulis na may ID',
+          'Isang kamag-anak na nagbabakasyon',
+        ],
+        q1Correct: 0,
+        options: [
+          'Tawagin ang tanod ng barangay o pulis',
+          'Hintayin mo munang makarinig ng sigaw',
+          'Tumabi ka lang — baka yan lang ang anak niya',
+          'Isigaw mo ang pangalan ng matanda para magising siya',
+        ],
+        correctIdx: 0,
+        worstIdx: 2,
+        psychTerm: 'Bystander effect',
+        why: 'Ang pagtawag sa tanod ng barangay o pulis ay nagmasid sa seguridad ng matanda nang hindi ka nagmamadali sa sala. Hindi mo kailangang magparaang mag-isip — basta may makarating na tulong. Ito ay mas ligtas kaysa sa personal na pagharap na maaaring lumala.',
+        worstWhy: 'Ang "baka yan lang ang anak niya" ay isang haka-haka na maaaring maglantad sa matanda sa panganib. Kapag may nagalit sa kanyang bahay, ang bawat minutong pagkaantala sa pagtawag ng tulong ay pwedeng magpabigat ng pinsala.',
+      ),
+      _MoralDilemma(
+        tagline: 'May nakitang bagong cellphone sa sahig ng mall.',
+        characters: 'Ikaw at ang nag-alaga ng store sa tabi',
+        setup: 'Sa mismong mall, nakakita ka ng bagong cellphone sa sahig malapit sa pinto. Lumipas ang ilang minuto at wala nang naghahanap. May tindahan sa tabi na may CCTV.',
+        q1Prompt: 'Ayon sa kwento, saan mo nakita ang cellphone?',
+        q1Options: [
+          'Sa sahig malapit sa pinto ng mall',
+          'Sa loob ng bag ng tindera',
+          'Sa bubong ng parking',
+          'Sa loob ng cr ng mall',
+        ],
+        q1Correct: 0,
+        options: [
+          'Ibigay sa customer service ng mall para balikan ng may-ari',
+          'Sukatin ang screen at ikaw na ang magkalat',
+          'Itago at itabi — baka away na lang kapag binanggit',
+          'Hulaan ang pin code — swerte na lang kung tama',
+        ],
+        correctIdx: 0,
+        worstIdx: 3,
+        psychTerm: 'Ethical dilemma',
+        why: 'Ang pagbibigay sa customer service ng mall (na may CCTV at ligtas na pag-aalaga) ay ang pinaka-makatao at madaling paraan — binabalik mo ang ari-arian nang hindi mo ito ginagawang personal na pasya. Ang tiwala ang hindi mo kayang bilhin ng kahit anong presyo ng phone.',
+        worstWhy: 'Ang pag-aangkin ng nawawalang cellphone ay pagnanakaw ng ari-arian ng iba. Ang "tinadhana sa akin" ay isang pagbigay-katwiran lamang — ang pera at pagkakataon na mawala ay dapat ibalik bilang karapatan ng tunay na may-ari.',
+      ),
+      _MoralDilemma(
+        tagline: 'Nalaman mong nasira ang dokumento ng kaaway mo sa trabaho.',
+        characters: 'Ikaw, ang kasamahan, at ang manager',
+        setup: 'May kaaway ka sa trabaho na lagi kang inaakusa. Isang araw, nalaman mong mali ang pag-aayos ng kanyang dokumento na maaaring magtanggal sa kanya sa trabaho. Nasa kamay mo lang ang katotohanan na pwedeng magligtas sa kanya.',
+        q1Prompt: 'Ayon sa kwento, ano ang maaaring maging resulta ng maling dokumento?',
+        q1Options: [
+          'Maaari siyang matanggal sa trabaho',
+          'Maaaring ma-promote siya',
+          'Wala itong epekto sa kanya',
+          'Baka ma-Angkinin niya ang bonus',
+        ],
+        q1Correct: 0,
+        options: [
+          'Ipadala ang katotohanan kahit na ayaw mo sa kanya',
+          'Hayaan lang — mabuti nang matanggal siya sa trabaho',
+          'Gamitin itong pakinabang para humingi ng pabor',
+          'Ipakalat sa iba ang totoong detalye para kahit papaano may gamit',
+        ],
+        correctIdx: 0,
+        worstIdx: 2,
+        psychTerm: 'Fairness',
+        why: 'Ang pagbigay ng ebidensya kahit may personal na hindi pagkakaunawaan ay nagpoprotekta sa hustisya ng trabaho — hindi ka gumagawa ng desisyon batay sa galit. Ang pagbagsak ng kasamahan ay hindi dapat maganap dahil lamang sa iyong pansariling galit.',
+        worstWhy: 'Ang paggamit ng sakit ng iba para makakuha ng pabor o kapalit ay isang uri ng blackmail. Ang "walang batas ang nagmamalasakit" ay hindi — ang hustisya ay hindi napapalitan ng personal na motibo.',
+      ),
     ];
 
-    final d = dilemmas[_rng.nextInt(dilemmas.length)];
+    final d = dilemmas[_nextFromBag('moral', dilemmas.length)];
 
     final story = '${d.tagline}\n\n'
         'Sitwasyon: ${d.setup}\n\n'
@@ -469,8 +690,93 @@ class CaseGenerator {
           'walang CCTV sa parking kaya walang rekord',
         ],
       ),
+      _DeceptionScene(
+        event: 'pagtakas ng isang alagang aso sa gate ng bahay',
+        places: [
+          'isang bahay sa Sikatuna, Quezon City',
+          'isang compound sa Pasig',
+          'isang housing village sa Cavite',
+          'isang farmhouse sa Batangas',
+        ],
+        whoInformed: 'may-ari ng bahay',
+        trueDetail: 'nakakandadong bakal na gate at walang nakalas na padlock nang oras ng insidente',
+        liarClaim: 'buksan ang gate nang kanyang makita at nakalabas ang aso roon',
+        q1Wrongs: [
+          'nagkwento ang kapitbahay na nasa ilalim ng pinto ang aso',
+          'may binabasag na bintana sa kusina',
+          'naglalakad ang mga aso sa loob ng compound',
+        ],
+      ),
+      _DeceptionScene(
+        event: 'pagkasira ng gulay sa loob ng bodega ng palengke',
+        places: [
+          'isang bodega ng palengke sa Divisoria',
+          'isang cold storage sa Davao',
+          'isang bodega ng supply sa Iloilo',
+          'isang imbakan ng bigas sa Nueva Ecija',
+        ],
+        whoInformed: 'katiwala ng bodega',
+        trueDetail: 'sarado ang lahat ng pinto ng bodega at naka-scan ang temperature na normal buong gabi',
+        liarClaim: 'nakita niyang bumukas ang pinto sa likuran at pumasok ang mga taong kinarga ang gulay',
+        q1Wrongs: [
+          'may malaking butas sa bubong na inaan ng ulan',
+          'nagulo ang cctv at walang rekord buong gabi',
+          'sinira ng mga daga ang mga kahon ng gulay',
+        ],
+      ),
+      _DeceptionScene(
+        event: 'pagnanakaw ng mga alahas sa isang jewelry store',
+        places: [
+          'isang jewelry store sa SM Mega Mall',
+          'isang tindahan ng alahas sa Greenhills',
+          'isang boutique sa Ayala',
+          'isang pawnshop sa Divisoria',
+        ],
+        whoInformed: 'manager ng tindahan',
+        trueDetail: 'walang nasirang bintana at naka-lock ang tindahan — nang walang tao, at walang pumasok sa pinto na wala sa CCTV nang oras ng insidente',
+        liarClaim: 'nakita niyang may lalaking humawak sa pinto nang 5 minuto at nagpatuloy sa loob bago pa man pumasok ang guard',
+        q1Wrongs: [
+          'bukas ang pinto at tahimik ang lahat ng camera',
+          'may tao na naka-mask na pumasok mula sa kisame',
+          'nanjan ang guard pero hindi niya napansin ang pagpasok',
+        ],
+      ),
+      _DeceptionScene(
+        event: 'pagbaha ng tubig sa loob ng isang opisina',
+        places: [
+          'isang opisina sa BGC',
+          'isang call center hub sa Clark',
+          'isang law office sa Makati',
+          'isang school library sa Marikina',
+        ],
+        whoInformed: 'administrator ng gusali',
+        trueDetail: 'walang pumutok na tubo ng tubig at patay ang pangunahing balbula ng building nang oras ng baha',
+        liarClaim: 'nakita niyang bumukas at pumutok ang tubo ng banyo sa ikalawang palapag bago pa man dumating ang baha',
+        q1Wrongs: [
+          'may pumutok na tubo sa kisame ng storage',
+          'may nag-iwan ng bukas na gripo sa cr',
+          'bumaha dahil sa malakas na ulan sa labas',
+        ],
+      ),
+      _DeceptionScene(
+        event: 'pagnanakaw ng mga gamit sa loob ng isang paaralan',
+        places: [
+          'isang pampublikong paaralan sa Tondo',
+          'isang science high school sa Quezon City',
+          'isang kolehiyo sa Cebu',
+          'isang boarding school sa Benguet',
+        ],
+        whoInformed: 'punong guro ng paaralan',
+        trueDetail: 'lahat ng bintana ay naka-rehas at nakakandado, at nakasara ang pangunahing pinto nang walang nasirang lock',
+        liarClaim: 'nakita niyang bukas ang bintana ng library at may pumasok na tao na may dalang bag',
+        q1Wrongs: [
+          'may bumukas na pinto galing sa loob',
+          'may nagyelong kawad na ginamit para makapasok',
+          'may sirang CCTV kaya walang rekord ng insidente',
+        ],
+      ),
     ];
-    final scene = scenes[_rng.nextInt(scenes.length)];
+    final scene = scenes[_nextFromBag('deception', scenes.length)];
     final place = _element(scene.places);
     final time = _element(times);
 
@@ -582,7 +888,7 @@ class CaseGenerator {
   // ===================== RIDDLE / BRAIN TEASER =====================
   SikoCase _generateRiddle() {
     final riddles = _riddles;
-    final r = riddles[_rng.nextInt(riddles.length)];
+    final r = riddles[_nextFromBag('riddle', riddles.length)];
 
     final questions = <CaseQuestion>[];
 
@@ -895,6 +1201,216 @@ class CaseGenerator {
       q4Explain:
         'Ang bitag: nagtatanong tayo ng "ilan ang NATIRA" kaya nagbibilang tayo ng bawas. Kung tatanungin mo ang tamang tanong ("lahat ba ay nasa tangke pa rin?"), makikita mo na walang nakaalis sa tangke. Ang tamang tanong ay kalahati na ng tamang sagot.',
     ),
+    _Riddle(
+      title: 'Ang Orasan na Nakabaligtad',
+      story: 'May isang taong gustong malaman kung anong oras na. Meron siyang dalawang relo: ang isa ay 5 minuto ang bilis, at ang isa naman ay 5 minutong hina. Alin ang mas maaasahan upang malaman ang totoong oras?',
+      q1Prompt: 'Ayon sa kwento, ilang minuto ang bilis ng unang relo?',
+      q1Options: [
+        '5 minutong bilis',
+        '10 minutong bilis',
+        '15 minutong bilis',
+        '30 minutong bilis',
+      ],
+      q1Correct: 0,
+      prompt: 'Alin ang mas maaasahan para malaman ang eksaktong oras?',
+      options: [
+        'Ang relong 5 minutong hina — kasi alam mong 5 minuto ka lang nasa likod at pwede mong i-add ang 5 minuto',
+        'Ang relong 5 minutong bilis — kasi parang mas mahaba ang panahon',
+        'Ang dalawa ay magkapareho — wala namang tama sa kanila',
+        'Wala sa dalawa — kailangan ng bagong relo',
+      ],
+      correctIdx: 0,
+      answerExplanation:
+          'Ang relong 5 minutong HINA ang mas maaasahan: kung sinasabi nito na 2:00, alam mong 2:05 na talaga (i-add mo ang 5 minuto). Ngunit ang relong 5 minutong BILIS ay gumagalaw pa rin nang mas mabilis — lumalayo pa ito sa tamang oras bawat minuto. Ang predictable na mali ay mas madaling i-correct kaysa sa mali na patuloy na lumalaki.',
+      psychPrompt: 'Ano ang prinsipyong sikolohikal na pinag-uusapan dito?',
+      psychOptions: [
+        'Predictability — mas maganda ang mali na alam mo ang sukat kaysa sa hindi mo alam ang paglihis',
+        'Halo effect — mas maganda ang mukhang mabilis',
+        'Priming — naaalala mo lang ang mga bilis na relo',
+        'Sunk cost — ayaw mong bitiwan ang relo na binili mo',
+      ],
+      psychCorrect: 0,
+      psychExplain:
+          'Ang insight: hindi lahat ng "mali" ay pantay. Ang mali na may CONSTANT at alam na paglihis ay pwedeng i-adjust — ito ay "kalibrated error." Ang mali na patuloy na lumalaki ay mas mahirap i-correct. Sa buhay, mas mabuting malaman ang iyong mga kahinaan (predictable) kaysa sa magkaroon ng pananalig na hindi mo kayang i-verify.',
+      q4Prompt: 'Ang bitag dito ay ang pag-aakalang…',
+      q4Options: [
+        'ang "bilis" ay parang mas magaling kaysa sa "hina"',
+        'ang relo ay may baterya',
+        'ang oras ay laging pareho sa lahat ng lugar',
+        'kailangan mong bilhin ang mas mahal na relo',
+      ],
+      q4Correct: 0,
+      q4Explain:
+        'Ang bitag: inuugnay natin ang "bilis" sa pagiging mabuti at "hina" sa pagiging masama — isang halimbawa ng value judgment na walang basehan. Sa math at lohika, ang bilis o hina ay hindi mas mabuti — ang pagiging PREDICTABLE at ADJUSTABLE ang mahalaga.',
+    ),
+    _Riddle(
+      title: 'Ang Tsuper at ang 4 na Pasahero',
+      story: 'Isang bus ang gumagalaw papunta sa hilaga. Ang tsuper ay 30 taong gulang. May 4 na pasahero sa loob: isang guro, isang nars, isang karpintero, at isang abogado. Ilang taon ang tsuper ng bus?',
+      q1Prompt: 'Ilang taon ang tsuper ng bus?',
+      q1Options: [
+        '30 taong gulang',
+        '40 taong gulang',
+        '50 taong gulang',
+        '60 taong gulang',
+      ],
+      q1Correct: 0,
+      prompt: 'Ilang taon ang tsuper ng bus?',
+      options: [
+        '30 taon — nakasaad mismo sa kwento na ang tsuper ay 30 taong gulang',
+        'Hindi alam — hindi nabanggit ang edad ng tsuper',
+        '30 taon — kasi may 4 na pasahero na may mga propesyon',
+        '34 taon — kasi 30 + 4 na pasahero',
+      ],
+      correctIdx: 0,
+      answerExplanation:
+          'Ang sagot ay nasa kwento mismo: "Ang tsuper ay 30 taong gulang." Ang lahat ng iba pang detalye (hilaga, mga propesyon) ay mga dagdag na distraction na hindi kailangan para sa sagot. Sinasanay nito ang iyong kakayahang i-filter kung aling impormasyon ang TOTOONG kailangan.',
+      psychPrompt: 'Anong cognitive tendency ang ginagamit ng trick na ito?',
+      psychOptions: [
+        'Cognitive load — sobrang daming impormasyon kaya nakakalimutan ang mahalagang detalye',
+        'Confirmation bias — hinahanap ang edad sa maling lugar',
+        'Halo effect — nabigla sa mga propesyon',
+        'Priming — naaalala lang ang mga katulad na palaisipan',
+      ],
+      psychCorrect: 0,
+      psychExplain:
+          'Ang palaisipang ito ay tungkol sa cognitive load: kapag maraming dagdag na detalye, nahihirapan ang utak na manatiling nakatutok sa core question. Ang kasanayang ito — pag-filter ng mahahalagang impormasyon mula sa ingay — ay susi sa problema-solving at paggawa ng desisyon.',
+      q4Prompt: 'Ang bitag dito ay…',
+      q4Options: [
+        'ang pag-focus sa mga dagdag na propesyon imbes na sa direktang sagot sa kwento',
+        'ang pagtingin sa kanan ng bus',
+        'ang pagbilang ng mga gulong',
+        'ang pagtukoy ng pangalan ng tsuper',
+      ],
+      q4Correct: 0,
+      q4Explain:
+        'Ang bitag: ang mga propesyon ng mga pasahero at ang direksyon ng bus ay mga "noise" na idinagdag para ma-distract ka. Ang kasanayang ito — pag-ignore ng irrelevancy — ay kung paano mo dapat tratuhin ang maraming impormasyon sa pang-araw-araw na buhay.',
+    ),
+    _Riddle(
+      title: 'Ang Palaka sa Balon',
+      story: 'Isang palaka ang nasa ilalim ng isang balon na 12 metro ang lalim. Araw-araw, umakyat ito ng 3 metro, pero sa gabi ay dumudulas ito pabalik ng 2 metro. Ilang araw bago ito makaakyat at makalabas sa balon?',
+      q1Prompt: 'Ilang metro ang lalim ng balon?',
+      q1Options: [
+        '12 metro',
+        '10 metro',
+        '15 metro',
+        '8 metro',
+      ],
+      q1Correct: 0,
+      prompt: 'Ilang araw bago makaalis ang palaka sa balon?',
+      options: [
+        '10 araw — sa unang 9 na araw ay netong 1 metro ang taas kada araw, at sa ika-10 araw ay aakyat ito ng 3 metro (9+3=12)',
+        '6 araw — kasi 12 / 2 = 6',
+        '4 na araw — kasi 12 / 3 = 4',
+        '12 araw — kasi 3 - 2 = 1 metro bawat araw',
+      ],
+      correctIdx: 0,
+      answerExplanation:
+          'Ang sagot ay 10 araw. Sa bawat araw, ang palaka ay may netong 1 metro na taas (umakyat ng 3, bumaba ng 2). Pagkatapos ng 9 na araw, nasa 9 na metro ito. Sa ika-10 araw, umakyat ito ng 3 metro: 9 + 3 = 12 metro — LABAS NA ito bago pa man dumulas pabalik sa gabi. Ang common mistake ay ang pag-sabi ng 12 araw (netong 1 metro/day), na hindi iniisip na sa huling araw ay aakyat na ito nang hindi na bumababa.',
+      psychPrompt: 'Anong karaniwang pagkakamali ang ginagawa ng mga sumasagot?',
+      psychOptions: [
+        'Hinahati nila ang total distance sa netong 1 metro nang hindi iniisip na sa huling araw ay makaakyat na',
+        'Sinisikap nilang i-multiply ang distansya sa araw',
+        'Nakalimutan nilang may tubig sa balon',
+        'Iniisip nilang ang palaka ay natutulog sa gabi',
+      ],
+      psychCorrect: 0,
+      psychExplain:
+          'Ang error ay ang pagtrato sa problema bilang isang tuwid na linear equation (12 / 1 = 12 araw) nang hindi iniisip ang endpoint condition — na kapag nakarating na sa tuktok ay hindi na kailangan pang bumaba. Ang pag-iisip sa mga "edge cases" ay mahalagang kasanayan sa lohika at pagprogram.',
+      q4Prompt: 'Ang bitag dito ay…',
+      q4Options: [
+        'ang pag-aakalang ang netong pag-akyat bawat araw ay kailangan mangyari hanggang sa huling araw',
+        'ang pagbilang ng mga palaka sa balon',
+        'ang pag-akala na may hagdan sa balon',
+        'ang pag-akalang walang tulog ang palaka',
+      ],
+      q4Correct: 0,
+      q4Explain:
+        'Ang bitag: hinahayaan nating maging ugali ang "netong 1 metro kada araw" kaya nakakalimutan natin na ang araw na umabot sa tuktok ay ang huling hakbang — hindi na siya bababa muli. Ang pag-check ng "anong mangyayari sa huling hakbang?" ay madalas ang susi sa tamang sagot.',
+    ),
+    _Riddle(
+      title: 'Ang Tatlong Lalaki sa Restawran',
+      story: 'Tatlong lalaki ang kumain sa isang restawran at nagbayad ng 30 piso — 10 piso bawat isa. Nalaman ng may-ari na ang bill ay 25 piso lamang, kaya binigyan niya ang waiter ng 5 piso para ibalik. Pero ang waiter ay nagtago ng 2 piso at nagbalik ng 3 piso — 1 piso bawat lalaki. Kaya ang bawat lalaki ay nagbayad ng 9 piso: 3 × 9 = 27, at 27 + 2 (tago ng waiter) = 29. Saan napunta ang 1 piso?',
+      q1Prompt: 'Magkano ang aktwal na bill ng mga lalaki?',
+      q1Options: [
+        '25 piso',
+        '30 piso',
+        '27 piso',
+        '20 piso',
+      ],
+      q1Correct: 0,
+      prompt: 'Saan napunta ang nawawalang 1 piso?',
+      options: [
+        'Wala itong nawawala — ang 27 ay ang total na 25 (bill) + 2 (tago ng waiter) na ang tanong ay mali ang pagbibilang',
+        'Kinukuha ito ng waiter sa kanyang bulsa',
+        'Nahulog sa sahig ng restawran',
+        'Binigay sa may-ari bilang tip',
+      ],
+      correctIdx: 0,
+      answerExplanation:
+          'Walang nawawalang piso. Ang 27 piso ay binubuo ng 25 (bill) + 2 (tinago ng waiter). Ang pag-add ng 2 sa 27 ay mali — ang 27 ay kasama na ang 2. Ang tamang pagtingin: 25 (sa may-ari) + 2 (sa waiter) = 27 (mula sa mga lalaki) + 3 (ibalik sa mga lalaki) = 30. Ang 29 ay isang maling equation na nagbibigay ng maling tanong.',
+      psychPrompt: 'Anong cognitive error ang nagpapalinlang sa atin sa palaisipang ito?',
+      psychOptions: [
+        'Confirmation bias — hinahanap natin ang "nawawalang piso" kahit walang nawawala',
+        'Halo effect — mahusay tayong nag-add ng numero',
+        'Anchoring — una tayong nag-focus sa 30',
+        'Framing — tinanggap natin ang maling matematika ng tanong',
+      ],
+      psychCorrect: 0,
+      psychExplain:
+          'Ang trick ay ang pag-frame: tinuturo sa atin ng kwento na "i-add ang 27 at 2" para i-assert na 29 na lang ang kabuuan. Ngunit ang operasyon mismo ang mali — ang 27 at 2 ay nagmula sa magkaibang base. Ang pagtanggap sa framing ng tanong nang walang pag-verify ay ang lihim na ugat ng maling sagot.',
+      q4Prompt: 'Ang bitag dito ay…',
+      q4Options: [
+        'ang pagtanggap sa maling math ng tanong nang hindi ito binubusisi',
+        'ang pag-iisip na ang waiter ay magnanakaw',
+        'ang pag-akalang walang 1 piso sa buong mundo',
+        'ang pag-akalang nagbayad ang mga lalaki ng 10 piso bawat isa',
+      ],
+      q4Correct: 0,
+      q4Explain:
+        'Ang bitag: ang tunay na lesson ay hindi tungkol sa piso kundi sa pag-verify ng mga claim. Kapag may tanong na "saan nawala ang 1 piso?", dapat mong balikan ang accounting — ang 27 + 2 ay walang kabuluhang pagbibilang. Ang pagsasanay sa matematika ay nagsisimula sa pagtatanong kung tama ba ang mga numero na ibinibigay sa iyo.',
+    ),
+    _Riddle(
+      title: 'Ang Bata at ang Ama',
+      story: 'Ang ama ni Juan ay may dalawang anak. Ang isa ay si Juan, at ang isa ay ang kapatid ni Juan. Ang ama ni Juan ay 40 taong gulang. Si Juan ay 20 taong gulang. Ilang taon ang kapatid ni Juan?',
+      q1Prompt: 'Ilang taon si Juan?',
+      q1Options: [
+        '20 taong gulang',
+        '10 taong gulang',
+        '30 taong gulang',
+        '40 taong gulang',
+      ],
+      q1Correct: 0,
+      prompt: 'Ilang taon ang kapatid ni Juan?',
+      options: [
+        'Hindi matukoy — hindi binigay ang edad ng kapatid',
+        '20 taon — kasi magkasing-edad sila ni Juan',
+        '10 taon — kasi hati sila sa edad ng ama',
+        '40 taon — kasi kasama siya sa edad ng ama',
+      ],
+      correctIdx: 0,
+      answerExplanation:
+          'Ang sagot: hindi natin alam. Ang kwento ay nagsasabi na may dalawang anak ang ama — si Juan at ang kapatid ni Juan — ngunit walang binabanggit na edad ng kapatid. Hindi mo pwedeng i-derive ang edad mula sa edad ni Juan o ng ama. Ang trick ay ang pag-aakalang kailangan mong mag-compute kapag ang sagot ay wala sa impormasyon.',
+      psychPrompt: 'Anong tendency ang nagpapaisip sa atin na may sagot na dapat i-compute?',
+      psychOptions: [
+        'Need for closure — gusto nating makuha agad ang isang numero kahit kulang ang impormasyon',
+        'Halo effect — nagtitiwala tayo sa mga taong may edad',
+        'Anchoring — na-focus tayo sa 40 at 20',
+        'Confirmation bias — naghahanap tayo ng pattern sa mga numero',
+      ],
+      psychCorrect: 0,
+      psychExplain:
+          'Ang "need for closure" ay ang cognitive tendency na gustong tapusin ang problema sa pamamagitan ng pagkuha ng sagot — kahit na ang tamang sagot ay "hindi natin alam." Ang pagtanggap sa kawalan ng impormasyon ay isang mas mahalagang kasanayan kaysa sa pagkuha ng maling sagot para lang may masagot.',
+      q4Prompt: 'Ang bitag dito ay…',
+      q4Options: [
+        'ang pag-akalang kailangang may bilang na sagot kahit walang sapat na impormasyon',
+        'ang pagbilang ng mga anak sa pamilya',
+        'ang pag-akalang si Juan ay panganay',
+        'ang pagtingin sa edad ng ama bilang code',
+      ],
+      q4Correct: 0,
+      q4Explain:
+        'Ang bitag: ang ating pagmamadali para sa "closure" (pagkuha ng sagot) ay madalas nagtutulak sa atin na mag-imbento ng numero. Ang matalinong sagot minsan ay "hindi natin alam" — at ang pagkilala sa limitasyon ng impormasyon ay isang mahalagang bahagi ng lohikal na pag-iisip.',
+    ),
   ];
 
   // ------------------------- helpers -------------------------
@@ -912,6 +1428,11 @@ class CaseGenerator {
       'Nagkwento siyang tumulong siya sa pagluluto, pero sinabi ng kasambahay na wala siya sa kusina sa oras na iyon.',
       'Sabi niyang nanood siya ng TV buong gabi, ngunit walang signal ang TV noong oras na iyon.',
       'Ang detalye ng kanyang alibi ay SOBRA-sobra — nakuha niyang banggitin pa kung anong kulay ng medyas suot niya. Walang tao ang naaalala ang ganun kalaking detalye nang walang ensayo.',
+      'Sabihin niyang "nasa meeting ako" buong hapon, ngunit walang meeting na naka-record sa kompanya at walang kasamahan ang nakakita sa kanya.',
+      'Sabi niyang nagbibisikleta siya papuntang bayan, pero wala sa garahe ang bike niya nang i-check ng pulis.',
+      'Inangkin niyang natulog siya sa cr ng opisina nang mahabang oras, pero nakasara at walang gumagalaw sa recording ng hall noong oras na iyon.',
+      'Nagsabing umutang siya ng pick-up sa kakilala, pero ang kakilala ay nasa ibang probinsya buong linggo.',
+      'Sabi niyang bumisita daw siya sa kaibigan sa ospital, pero walang pangalan niya sa visitor log ng ospital nang araw na iyon.',
     ];
     return breaks[_rng.nextInt(breaks.length)];
   }
@@ -923,6 +1444,11 @@ class CaseGenerator {
       'Kasama niya ang buong pamilya niya nang kumakain sa hapag noong oras ng krimen',
       'Tinawagan niya ang kanyang kaibigan sa telepono nang eksaktong oras ng krimen',
       'Kinumpirma ng isang kasamahan sa trabaho na kasama siya mag-review buong gabi',
+      'May time-in record sa opisina at election voucher na nagpapatunay sa kanyang lokasyon',
+      'May video call log sa kaibigan na tumagal ng mahigit isang oras nang oras ng krimen',
+      'May resibo ng grocery sa anumang tindahan na may timestamp na eksakto sa oras ng krimen',
+      'Sumakay siya sa jeep na may konduktor na naaalala ang kanyang mukha at pwesto',
+      'May resibo ng sine sa mall na may eksaktong oras ng panonood na tumutugma sa krimen',
     ];
     return solids[_rng.nextInt(solids.length)];
   }
@@ -933,6 +1459,8 @@ class CaseGenerator {
       '"Huling beses kaming nag-usap ni $victim ay noong Monday, pero normal pa noon," ani niya — at agad dinagdag, "Alam mo, ang kantina ay may bagong mantel, at ang tindahan ay bagong pintura, at ang sasakyan ng kapitbahay ay may bagong gulong..." Sobrang layo ng sigla sa tanong.',
       '"Alam ko ang nararamdaman niya tungkol sa mga nangyari sa nakaraan," malamig na sabi niya, ngunit hindi niya maalala ang huling ngiti ng biktima.',
       '"Kung ako ang nasa labas, hindi ko hahayaang mangyari iyan kay $victim," sabi niya, ngunit nang tanungin tungkol sa ginawa niya, bigla siyang nanahimik.',
+      '"Kakaalis pa lang namin noong nagkita kami. Kaunti lang ang inusap," sabi niya — pero nang hilinging ilarawan ang damit ng biktima, nakapagbigay siya ng sobrang detalye tungkol sa sapatos, medyas, at kahit na butones ng polo.',
+      '"Akala ko nasa bahay siya buong araw," malamig na sabi niya — ngunit nang tanungin kung saan siya mismo pumunta, nagkalituhan ang kwento at nagbago ng pwesto.',
     ];
     return st[_rng.nextInt(st.length)];
   }
@@ -943,6 +1471,8 @@ class CaseGenerator {
       '"Narinig ko ang sigaw ni $victim mula sa labas, pero laging may mga ingay sa lugar na ito," aniya nang may pangamba.',
       '"Siyempre, alam kong may mga taong may sama ng loob. Pero hindi ko akalain na ganito kalalim," sambit niyang nakayuko.',
       '"Nag-usap kami ni $victim tungkol sa mga plano, nakangiti pa siya noong umaga," sabi niyang mapait.',
+      '"Kailangan kong masagot ang pangalan niya sa madaling araw," sabi niyang may halong pagod, "Pero mabilis kong nakalimutan kasi maraming nangyayari sa buhay ko."',
+      '"Hindi ko alam kung bakit siya napasama sa gulo. Mabait naman siya sa akin palagi," umiyak siya habang nagsasalita.',
     ];
     return st[_rng.nextInt(st.length)];
   }
