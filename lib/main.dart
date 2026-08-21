@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 
 void main() {
-  runApp(const SikoDetectiveApp());
+  runApp(const MentalistApp());
 }
 
-class SikoDetectiveApp extends StatelessWidget {
-  const SikoDetectiveApp({super.key});
+class MentalistApp extends StatelessWidget {
+  const MentalistApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SikoDetective',
+      title: 'MENTALIST',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,

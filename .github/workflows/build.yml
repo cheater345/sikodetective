@@ -23,9 +23,13 @@ jobs:
           flutter create --org com.sikodetective --platforms android --no-pub .
           rm -f test/widget_test.dart
           sed -i "s|<application|    <uses-permission android:name=\"android.permission.INTERNET\"/>\\n    <application|" android/app/src/main/AndroidManifest.xml
+          sed -i "s|android:label=\"sikodetective\"|android:label=\"MENTALIST\"|" android/app/src/main/AndroidManifest.xml
 
       - name: Pub get
         run: flutter pub get
+
+      - name: Apply app icon
+        run: dart run flutter_launcher_icons
 
       - name: Analyze
         run: flutter analyze || true

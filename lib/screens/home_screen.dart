@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Icon(Icons.psychology_alt, size: 72, color: Color(0xFFD4A017)),
               const SizedBox(height: 12),
               const Text(
-                'SIKODETECTIVE',
+                'MENTALIST',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 28,
